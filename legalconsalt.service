@@ -1,0 +1,18 @@
+[Unit]
+Description=LegalConsalt Telegram → Trello bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# ВНИМАНИЕ: подставь реальный путь и пользователя на VPS перед установкой
+User=legalconsalt
+WorkingDirectory=/opt/legalconsalt
+ExecStart=/opt/legalconsalt/.venv/bin/python /opt/legalconsalt/userbot.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

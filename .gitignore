@@ -1,0 +1,22 @@
+# Секреты — НИКОГДА не коммитить
+.env
+.env.local
+
+# Сессии Telethon (равноценны паролю от аккаунта)
+session/
+*.session
+*.session-journal
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Логи и временное
+*.log
+
+# Системное / IDE
+.DS_Store
+.idea/
+.vscode/
