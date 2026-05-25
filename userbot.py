@@ -4,9 +4,10 @@ import logging
 from loguru import logger
 from telethon import TelegramClient, events
 from telethon.network import ConnectionTcpObfuscated
+from telethon.tl.types import MessageEntityTextUrl
 
 import config
-from parser import parse_message
+from parser import is_lead, parse_message
 from trello import create_card
 
 logging.basicConfig(
@@ -34,15 +35,26 @@ client = TelegramClient(
 async def on_application(event: events.NewMessage.Event) -> None:
     text = event.raw_text or ""
     msg_id = event.message.id
+
+    if not is_lead(text):
+        logger.info(f"Пропущено (не заявка, напр. напоминание о подписке) msg_id={msg_id}")
+        return
+
     logger.info(f"Получена заявка msg_id={msg_id}, длина {len(text)} символов")
 
     parsed = parse_message(text)
-    parsed["description"] = (
-        f"{parsed['description']}\n\n"
-        f"---\n"
-        f"tg_msg_id={msg_id}\n"
-        f"tg_link=https://t.me/c/{str(config.TARGET_GROUP_ID)[4:]}/{msg_id}"
-    )
+
+    # Достаём спрятанные за гиперссылками URL (напр. «Перейти в диалог»).
+    links = [
+        e.url
+        for e in (event.message.entities or [])
+        if isinstance(e, MessageEntityTextUrl)
+    ]
+
+    footer = f"---\ntg_msg_id={msg_id}"
+    if links:
+        footer += "\n🔗 Диалог: " + "\n🔗 ".join(links)
+    parsed["description"] = f"{parsed['description']}\n\n{footer}"
 
     try:
         await create_card(**parsed)

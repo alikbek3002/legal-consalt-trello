@@ -11,6 +11,20 @@ PHONE_RE = re.compile(r"-\s*Номер телефона:\s*(.+)")
 CHANNEL_RE = re.compile(r"📡\s*Канал:\s*(.+)")
 REASON_RE = re.compile(r"💬\s*Причина:\s*(.+)")
 
+# Маркеры сообщений, которые НЕ являются заявками клиента
+# (системные уведомления — для них карточки не создаём).
+NON_LEAD_MARKERS = (
+    "Подписка скоро истекает",
+    "Дата истечения",
+    "Продлить подписку",
+)
+
+
+def is_lead(text: str) -> bool:
+    """False для системных сообщений (напоминания о подписке и т.п.)."""
+    t = text or ""
+    return not any(marker in t for marker in NON_LEAD_MARKERS)
+
 
 def parse_message(text: str) -> dict[str, str]:
     """
